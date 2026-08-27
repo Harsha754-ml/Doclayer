@@ -3,24 +3,98 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:WordBarcodeStudio.Converters"
         xmlns:models="clr-namespace:WordBarcodeStudio.Models"
-        Title="Word Barcode Studio"
+        Title="Doclayer"
+        Icon="{DynamicResource LogoDrawing}"
         Width="920" Height="780"
         MinWidth="760" MinHeight="640"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI"
-        Background="#F4F6FB"
+        Background="{DynamicResource AppBg}"
         TextOptions.TextFormattingMode="Display">
 
     <Window.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BoolToVis" />
         <conv:ControlToVisibilityConverter x:Key="ControlToVis" />
 
+        <LinearGradientBrush x:Key="LogoGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Offset="0" Color="#2563EB" />
+            <GradientStop Offset="1" Color="#1E3A8A" />
+        </LinearGradientBrush>
+
+        <DrawingImage x:Key="LogoDrawing">
+            <DrawingImage.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="{StaticResource LogoGradient}">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="16,16,224,224" RadiusX="46" RadiusY="46" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#33FFFFFF">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="42,32,156,168" RadiusX="14" RadiusY="14" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFFFFF">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="50,44,156,168" RadiusX="14" RadiusY="14" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#2563EB">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="70,64,56,56" RadiusX="6" RadiusY="6" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFFFFF">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="76,70,44,44" RadiusX="4" RadiusY="4" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#2563EB">
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup>
+                                <RectangleGeometry Rect="78,72,9,9" />
+                                <RectangleGeometry Rect="87,72,9,9" />
+                                <RectangleGeometry Rect="96,72,9,9" />
+                                <RectangleGeometry Rect="105,72,9,9" />
+                                <RectangleGeometry Rect="78,81,9,9" />
+                                <RectangleGeometry Rect="105,81,9,9" />
+                                <RectangleGeometry Rect="78,90,9,9" />
+                                <RectangleGeometry Rect="87,90,9,9" />
+                                <RectangleGeometry Rect="96,90,9,9" />
+                                <RectangleGeometry Rect="105,90,9,9" />
+                                <RectangleGeometry Rect="78,99,9,9" />
+                                <RectangleGeometry Rect="96,99,9,9" />
+                                <RectangleGeometry Rect="105,99,9,9" />
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#1E3A8A">
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup>
+                                <RectangleGeometry Rect="72,150,8,34" />
+                                <RectangleGeometry Rect="84,150,4,34" />
+                                <RectangleGeometry Rect="92,150,10,34" />
+                                <RectangleGeometry Rect="106,150,4,34" />
+                                <RectangleGeometry Rect="114,150,6,34" />
+                                <RectangleGeometry Rect="124,150,12,34" />
+                                <RectangleGeometry Rect="140,150,4,34" />
+                                <RectangleGeometry Rect="148,150,8,34" />
+                                <RectangleGeometry Rect="160,150,4,34" />
+                                <RectangleGeometry Rect="168,150,10,34" />
+                                <RectangleGeometry Rect="182,150,4,34" />
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource CardBg}" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Padding" Value="16" />
             <Setter Property="Margin" Value="0,0,0,14" />
-            <Setter Property="BorderBrush" Value="#E3E8F0" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Effect">
                 <Setter.Value>
@@ -32,13 +106,13 @@
         <Style x:Key="FieldLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#475569" />
+            <Setter Property="Foreground" Value="{DynamicResource FieldLabelFg}" />
             <Setter Property="Margin" Value="0,0,0,6" />
         </Style>
 
         <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#2563EB" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource PrimaryBtnBg}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBtnFg}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Padding" Value="18,10" />
             <Setter Property="BorderThickness" Value="0" />
@@ -56,8 +130,8 @@
         </Style>
 
         <Style x:Key="SecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#EEF2FF" />
-            <Setter Property="Foreground" Value="#1E3A8A" />
+            <Setter Property="Background" Value="{DynamicResource SecondaryBtnBg}" />
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryBtnFg}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Padding" Value="14,10" />
             <Setter Property="BorderThickness" Value="0" />
@@ -74,19 +148,50 @@
             </Setter>
         </Style>
 
+        <Style x:Key="HeaderButton" TargetType="Button">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#1E3A8A" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="TextBox">
             <Setter Property="Padding" Value="10" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource TextBoxBg}" />
+            <Setter Property="Foreground" Value="{DynamicResource InputText}" />
             <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         </Style>
 
         <Style TargetType="ComboBox">
             <Setter Property="Padding" Value="8" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource TextBoxBg}" />
+            <Setter Property="Foreground" Value="{DynamicResource InputText}" />
+        </Style>
+
+        <Style TargetType="Expander">
+            <Setter Property="Foreground" Value="{DynamicResource InputText}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{DynamicResource InputText}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
         <!-- Dynamic per-type option row -->
@@ -96,9 +201,9 @@
                     <ColumnDefinition Width="160" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding Label}" VerticalAlignment="Center"
-                           FontSize="12" FontWeight="SemiBold" Foreground="#475569"
-                           TextWrapping="Wrap" />
+                 <TextBlock Text="{Binding Label}" VerticalAlignment="Center"
+                            FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FieldLabelFg}"
+                            TextWrapping="Wrap" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <ComboBox ItemsSource="{Binding Items}"
                               DisplayMemberPath="Display" SelectedValuePath="Value"
@@ -122,13 +227,22 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Style="{StaticResource Card}" Background="#2563EB" BorderThickness="0">
-            <StackPanel>
-                <TextBlock Text="Word Barcode Studio"
-                           FontSize="24" FontWeight="Bold" Foreground="White" />
-                <TextBlock Text="Generate barcodes using Microsoft Word"
-                           FontSize="13" Foreground="#DBEAFE" Margin="0,4,0,0" />
-            </StackPanel>
+        <Border Grid.Row="0" Style="{StaticResource Card}" Background="{DynamicResource HeaderCardBg}" BorderThickness="0">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="{StaticResource LogoDrawing}" Width="46" Height="46" Margin="0,0,14,0" />
+                    <StackPanel>
+                        <TextBlock Text="Doclayer"
+                                   FontSize="24" FontWeight="Bold" Foreground="{DynamicResource HeaderText}" />
+                        <TextBlock Text="Generate barcodes using Microsoft Word"
+                                   FontSize="13" Foreground="{DynamicResource HeaderSub}" Margin="0,4,0,0" />
+                    </StackPanel>
+                </StackPanel>
+                <Button Content="{Binding ThemeButtonLabel}"
+                        Command="{Binding ToggleThemeCommand}"
+                        Style="{StaticResource HeaderButton}"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" />
+            </Grid>
         </Border>
 
         <!-- Body -->
@@ -159,6 +273,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Bottom">
                             <CheckBox Content="Run Word in background"
+                                      Foreground="{DynamicResource InputText}"
                                       IsChecked="{Binding Settings.RunWordInBackground}" />
                         </StackPanel>
                     </Grid>
@@ -206,11 +321,11 @@
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <TextBlock Text="Preview" Style="{StaticResource FieldLabel}" />
-                        <Border Background="#F8FAFC" BorderBrush="#E3E8F0" BorderThickness="1"
+                        <Border Background="{DynamicResource PreviewBg}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
                                 CornerRadius="8" Height="210">
                             <Grid>
                                 <TextBlock Text="Barcode preview will appear here after generation."
-                                           Foreground="#94A3B8" FontStyle="Italic"
+                                           Foreground="{DynamicResource MutedText}" FontStyle="Italic"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
                                            Visibility="{Binding HasPreview, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
                                 <Image Source="{Binding PreviewImage}"
@@ -223,7 +338,7 @@
                         <TextBox Text="{Binding FieldCodePreview}"
                                  IsReadOnly="True" Height="60" TextWrapping="Wrap"
                                  VerticalContentAlignment="Top"
-                                 Background="#F8FAFC" />
+                                 Background="{DynamicResource PreviewBg}" />
                     </StackPanel>
                 </Border>
 
@@ -232,13 +347,13 @@
 
         <!-- Status -->
         <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0"
-                Background="#0F172A" BorderThickness="0">
+                Background="{DynamicResource StatusBg}" BorderThickness="0">
             <StackPanel Orientation="Horizontal">
-                <TextBlock FontSize="12" Foreground="#E2E8F0">
+                <TextBlock FontSize="12" Foreground="{DynamicResource StatusFg}">
                     <Run Text="Word Status:" FontWeight="Bold" />
                     <Run Text="{Binding WordStatus}" />
                 </TextBlock>
-                <TextBlock FontSize="12" Foreground="#E2E8F0" Margin="28,0,0,0">
+                <TextBlock FontSize="12" Foreground="{DynamicResource StatusFg}" Margin="28,0,0,0">
                     <Run Text="Generation Status:" FontWeight="Bold" />
                     <Run Text="{Binding GenerationStatus}" />
                 </TextBlock>

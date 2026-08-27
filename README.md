@@ -1,4 +1,4 @@
-# Word Barcode Studio
+# Doclayer
 
 **Generate barcodes using Microsoft Word.**
 
@@ -16,7 +16,7 @@ This is a **prototype** built to demonstrate the architecture:
 ```
 User
   ↓
-Word Barcode Studio (WPF / .NET 8)
+Doclayer (WPF / .NET 8)
   ↓
 Microsoft Word COM Automation
   ↓

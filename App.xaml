@@ -3,5 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
+        <SolidColorBrush x:Key="AppBg" Color="#F4F6FB" />
+        <SolidColorBrush x:Key="CardBg" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="CardBorder" Color="#E3E8F0" />
+        <SolidColorBrush x:Key="FieldLabelFg" Color="#475569" />
+        <SolidColorBrush x:Key="PrimaryBtnBg" Color="#2563EB" />
+        <SolidColorBrush x:Key="PrimaryBtnFg" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="SecondaryBtnBg" Color="#EEF2FF" />
+        <SolidColorBrush x:Key="SecondaryBtnFg" Color="#1E3A8A" />
+        <SolidColorBrush x:Key="TextBoxBg" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="ControlBorder" Color="#CBD5E1" />
+        <SolidColorBrush x:Key="HeaderCardBg" Color="#2563EB" />
+        <SolidColorBrush x:Key="HeaderText" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="HeaderSub" Color="#DBEAFE" />
+        <SolidColorBrush x:Key="PreviewBg" Color="#F8FAFC" />
+        <SolidColorBrush x:Key="MutedText" Color="#94A3B8" />
+        <SolidColorBrush x:Key="StatusBg" Color="#0F172A" />
+        <SolidColorBrush x:Key="StatusFg" Color="#E2E8F0" />
+        <SolidColorBrush x:Key="InputText" Color="#1E293B" />
     </Application.Resources>
 </Application>

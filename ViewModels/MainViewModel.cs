@@ -40,6 +40,24 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         OpenCommand = new RelayCommand(_ => OpenInWord());
         SaveDocxCommand = new RelayCommand(_ => SaveDocx());
         ExportPdfCommand = new RelayCommand(_ => ExportPdf());
+        ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+
+        ThemeButtonLabel = ThemeManager.IsDark ? "Light mode" : "Dark mode";
+    }
+
+    public ICommand ToggleThemeCommand { get; }
+
+    private string _themeButtonLabel = "Dark mode";
+    public string ThemeButtonLabel
+    {
+        get => _themeButtonLabel;
+        set { _themeButtonLabel = value; OnPropertyChanged(); }
+    }
+
+    private void ToggleTheme()
+    {
+        ThemeManager.Toggle();
+        ThemeButtonLabel = ThemeManager.IsDark ? "Light mode" : "Dark mode";
     }
 
     public BarcodeSettings Settings { get; }

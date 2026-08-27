@@ -7,10 +7,10 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>WordBarcodeStudio</AssemblyName>
+    <AssemblyName>Doclayer</AssemblyName>
     <RootNamespace>WordBarcodeStudio</RootNamespace>
-    <AssemblyTitle>Word Barcode Studio</AssemblyTitle>
-    <Product>Word Barcode Studio</Product>
+    <AssemblyTitle>Doclayer</AssemblyTitle>
+    <Product>Doclayer</Product>
   </PropertyGroup>
 
 </Project>

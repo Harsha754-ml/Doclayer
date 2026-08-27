@@ -42,6 +42,11 @@ artifacts/
 *.tmp
 ~$*
 
+# Installer build artifacts
+publish/
+installer/Components.wxs
+
+
 # OS / editor
 .DS_Store
 Thumbs.db

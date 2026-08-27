@@ -1,0 +1,22 @@
+<Project Sdk="WixToolset.Sdk/4.0.5">
+
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <OutputName>Doclayer</OutputName>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <DefineConstants>ProductVersion=1.0.0.0</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+    <!-- Components.wxs is generated at build time by `wix heat` (see the
+         GitHub Actions workflow) and must exist before this project builds. -->
+    <Compile Include="Components.wxs" />
+    <Content Include="License.rtf" />
+  </ItemGroup>
+
+</Project>
