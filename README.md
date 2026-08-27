@@ -123,6 +123,32 @@ dialog (e.g. a "first run" activation prompt) when you click **Generate**.
 
 ---
 
+## Supported DISPLAYBARCODE switches
+
+The options panel is **data-driven**: it shows only the switches that are valid
+for the selected barcode type. All switches are Word's native `DISPLAYBARCODE`
+switches (no third-party generation):
+
+| Switch | Meaning | Applies to | UI control |
+|--------|---------|------------|------------|
+| `\s`   | Scale (10–1000%) | All | Number |
+| `\r`   | Rotation (0–3 → 0/90/180/270°) | All | Dropdown |
+| `\t`   | Show encoded text | All | Checkbox |
+| `\q`   | QR error correction (L/M/Q/H) | QR | Dropdown |
+| `\u`   | Unicode data | All | Checkbox |
+| `\h`   | Height (twips) | All | Number |
+| `\f`   | Foreground color | All | Dropdown |
+| `\b`   | Background color | All | Dropdown |
+| `\x`   | Fix invalid check digit | EAN/UPC | Checkbox |
+| `\d`   | Add Start/Stop chars | CODE39 | Checkbox |
+| `\c`   | ITF14 case code style (STD/2/3) | ITF14 | Dropdown |
+
+The preview extracts the barcode image Word actually rendered, so every
+combination of these switches is supported by the preview, Save DOCX, and
+Export PDF paths.
+
+---
+
 ## Project structure
 
 ```

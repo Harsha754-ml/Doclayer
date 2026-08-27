@@ -1,0 +1,48 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+
+# Visual Studio / Rider cache, logs and settings
+.vs/
+.idea/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+
+# .NET / NuGet
+project.lock.json
+nuget.config
+packages/
+*.nupkg
+dotnet-coverage/
+artifacts/
+
+# Test / coverage
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+[Cr]overage/
+
+# Temporary files produced by this app
+# (the app uses %TEMP%\WordBarcodeStudio at runtime; this just avoids stray locals)
+*.tmp
+~$*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp

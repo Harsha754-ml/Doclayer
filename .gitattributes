@@ -1,0 +1,15 @@
+# Auto-detect text files and normalize line endings to LF on commit.
+* text=auto
+
+# Source files
+*.cs    text
+*.xaml  text
+*.csproj text
+*.md    text
+*.sln   text
+
+# Binary assets should not be normalized
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.pdf   binary
