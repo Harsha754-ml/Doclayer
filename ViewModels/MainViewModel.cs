@@ -145,7 +145,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             GenerationStatus = "Generating preview...";
             await Task.Delay(30);
 
-            string? previewPath = _word.ExtractPreview();
+            string? previewPath = await _word.ExtractPreviewAsync();
             if (!string.IsNullOrEmpty(previewPath) && File.Exists(previewPath))
             {
                 var bmp = new BitmapImage();

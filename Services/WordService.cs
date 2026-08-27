@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WordBarcodeStudio.Services;
@@ -98,35 +99,81 @@ public class WordService : IDisposable
     /// can show a real preview. Must be called on an STA thread (the UI thread)
     /// because it may read the clipboard.
     /// </summary>
-    public string? ExtractPreview()
+    /// <summary>
+    /// Pulls the rendered barcode out of Word and saves it as a PNG so the UI can
+    /// show a real preview. Must be called on an STA thread (the UI thread).
+    /// Word only materializes the barcode graphic when it is visible, so when the
+    /// app is running Word in the background we briefly show Word, let it render,
+    /// then hide it again.
+    /// </summary>
+    public async Task<string?> ExtractPreviewAsync()
     {
         if (_doc == null || _wordApp == null) return null;
 
-        // Method 1: the barcode usually renders as an inline picture.
+#pragma warning disable CS8602
+        bool wasHidden = false;
+        try { wasHidden = !_wordApp.Visible; } catch { }
+        if (wasHidden) { try { _wordApp.Visible = true; } catch { } }
+
+        string? result = null;
         try
         {
-            dynamic inline = _doc!.InlineShapes;
+            await Task.Delay(200); // give Word a moment to render the field result
+            result = TryExtract();
+        }
+        finally
+        {
+            if (wasHidden) { try { _wordApp!.Visible = false; } catch { } }
+        }
+#pragma warning restore CS8602
+
+        return result;
+    }
+
+    private string? TryExtract()
+    {
+        if (_doc == null) return null;
+
+        // 1) Inline picture -> SaveAsPicture.
+        try
+        {
+            dynamic inline = _doc.InlineShapes;
             if (inline.Count >= 1)
             {
                 dynamic shape = inline[inline.Count];
-                string p = Path.Combine(TempDirectory, $"preview_{Guid.NewGuid():N}.png");
+                string p = NewPng();
                 shape.SaveAsPicture(p);
-                if (File.Exists(p) && new FileInfo(p).Length > 0) return p;
+                if (ValidPng(p)) return p;
             }
         }
         catch { }
 
-        // Method 2: copy the field result as a picture and read it from the clipboard.
+        // 2) Floating shape -> CopyPicture -> clipboard.
         try
         {
-            dynamic fields = _doc!.Fields;
+            dynamic shapes = _doc.Shapes;
+            if (shapes.Count >= 1)
+            {
+                dynamic shape = shapes[shapes.Count];
+                shape.CopyPicture();
+                var r = ReadClipboardPng();
+                if (r != null) return r;
+            }
+        }
+        catch { }
+
+        // 3) Field -> select -> copy as picture -> clipboard (type-agnostic).
+        try
+        {
+            dynamic fields = _doc.Fields;
             if (fields.Count >= 1)
             {
                 dynamic field = fields[fields.Count];
                 field.Select();
                 dynamic sel = _wordApp!.Selection;
                 sel.CopyAsPicture();
-                return ReadClipboardPng();
+                var r = ReadClipboardPng();
+                if (r != null) return r;
             }
         }
         catch { }
@@ -134,34 +181,62 @@ public class WordService : IDisposable
         return null;
     }
 
-    private string? ReadClipboardPng()
+    private string NewPng() => Path.Combine(TempDirectory, $"preview_{Guid.NewGuid():N}.png");
+
+    private static bool ValidPng(string p)
     {
-        string p = Path.Combine(TempDirectory, $"preview_{Guid.NewGuid():N}.png");
         try
         {
-            var data = Clipboard.GetDataObject();
-            if (data == null) return null;
+            if (!File.Exists(p)) return false;
+            var info = new FileInfo(p);
+            // A real barcode PNG is well over a few hundred bytes.
+            return info.Length > 200;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
-            if (data.GetDataPresent(DataFormats.EnhancedMetafile))
+    private string? ReadClipboardPng()
+    {
+        string p = NewPng();
+        try
+        {
+            if (!Clipboard.ContainsData(DataFormats.Bitmap) &&
+                !Clipboard.ContainsData(DataFormats.EnhancedMetafile))
             {
-                if (data.GetData(DataFormats.EnhancedMetafile) is Metafile mf)
-                {
-                    mf.Save(p, ImageFormat.Png);
-                    return p;
-                }
+                return null;
             }
 
-            if (data.GetDataPresent(DataFormats.Bitmap))
+            // Direct bitmap is the easy case.
+            if (Clipboard.ContainsData(DataFormats.Bitmap) &&
+                Clipboard.GetData(DataFormats.Bitmap) is Bitmap bmp)
             {
-                if (data.GetData(DataFormats.Bitmap) is Bitmap bmp)
-                {
-                    bmp.Save(p, ImageFormat.Png);
-                    return p;
-                }
+                bmp.Save(p, ImageFormat.Png);
+                if (ValidPng(p)) return p;
+            }
+
+            // Enhanced metafile: render onto a bitmap so PNG encoding is reliable.
+            if (Clipboard.ContainsData(DataFormats.EnhancedMetafile) &&
+                Clipboard.GetData(DataFormats.EnhancedMetafile) is Metafile mf)
+            {
+                int w = Math.Max(32, Math.Min(mf.Width, 4096));
+                int h = Math.Max(32, Math.Min(mf.Height, 4096));
+                using var outBmp = new Bitmap(w, h);
+                using var g = Graphics.FromImage(outBmp);
+                g.FillRectangle(Brushes.White, 0, 0, w, h);
+                g.DrawImage(mf, 0, 0, w, h);
+                outBmp.Save(p, ImageFormat.Png);
+                if (ValidPng(p)) return p;
             }
         }
-        catch { }
+        catch
+        {
+            try { if (File.Exists(p)) File.Delete(p); } catch { }
+        }
 
+        try { if (File.Exists(p)) File.Delete(p); } catch { }
         return null;
     }
 
