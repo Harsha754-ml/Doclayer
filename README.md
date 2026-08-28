@@ -1,278 +1,177 @@
-# Doclayer
+<div align="center">
 
-**Generate barcodes using Microsoft Word.**
+# DocLayer
 
-A Windows desktop prototype that proves a standalone application can drive
-**Microsoft Word** through COM automation to render barcodes/QR codes using
-Word's native **`DISPLAYBARCODE`** field. No third-party QR/barcode library is
-used for generation — **Word itself is the rendering engine**.
+**A programmable document automation layer & native barcode studio for Microsoft Word.**
+
+[![Release](https://img.shields.io/github/v/release/Harsha754-ml/Doclayer?color=10B981&label=Release)](https://github.com/Harsha754-ml/Doclayer/releases/latest)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0A0A0A?logo=windows)](https://github.com/Harsha754-ml/Doclayer)
+[![.NET](https://img.shields.io/badge/.NET-8.0--windows-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+</div>
 
 ---
 
-## What this is
+## ⚡ Overview
 
-This is a **prototype** built to demonstrate the architecture:
+**DocLayer** is a modern Windows desktop application that uses **Microsoft Word** as a programmable document and vector barcode rendering engine via COM automation.
+
+Instead of relying on third-party bitmap generators, DocLayer injects native Word **`DISPLAYBARCODE`** fields directly into Word documents. This produces 100% vector-sharp, print-ready barcodes, multi-barcode document queues, high-DPI metafile previews, and instant Word (`.docx`) and PDF export pipelines.
 
 ```
-User
-  ↓
-Doclayer (WPF / .NET 8)
-  ↓
-Microsoft Word COM Automation
-  ↓
-Word Document + DISPLAYBARCODE field
-  ↓
-Rendered QR / Barcode
+┌──────────────┐     COM Automation     ┌────────────────────────┐     Native Rendering     ┌────────────────────────┐
+│   DocLayer   │ ─────────────────────> │     Microsoft Word     │ ───────────────────────> │ Valid .docx / .pdf Doc │
+│ Desktop App  │                        │ DISPLAYBARCODE Fields  │                          │ + Real-Time Preview    │
+└──────────────┘                        └────────────────────────┘                          └────────────────────────┘
 ```
 
-The application:
+---
 
-1. Accepts barcode data and options from the UI.
-2. Starts Microsoft Word through COM (in the background by default).
-3. Creates a temporary Word document.
-4. Inserts a real `DISPLAYBARCODE` field programmatically (you never type the field code).
-5. Forces Word to update the field so Word renders the barcode.
-6. Extracts a preview image from Word (best-effort) and shows it in the app.
-7. Lets you **Save DOCX**, **Export PDF**, and **Open in Word**.
+## 📥 Installation
+
+### Option 1: Modern Setup Wizard (Recommended)
+
+1. Go to the **[Latest GitHub Releases](https://github.com/Harsha754-ml/Doclayer/releases/latest)** page.
+2. Download **`DocLayer-v1.0.0-Windows-Setup.zip`**.
+3. Extract the ZIP archive and double-click **`DocLayer.Setup.exe`**.
+4. Follow the setup wizard:
+   - **EULA Agreement**: Review and accept the End-User License Agreement.
+   - **Destination**: Choose your installation folder (default: `%LocalAppData%\Programs\DocLayer`).
+   - **Shortcuts**: Select whether to create Desktop and Start Menu shortcuts.
+   - **System Verification**: Setup automatically checks for .NET 8 Runtime and Microsoft Word COM registration.
+   - **Finish**: Click Install, then launch DocLayer directly.
 
 ---
 
-## Requirements
+### Option 2: Build & Run from Source
 
-- **Windows 10/11**
-- **Microsoft Word desktop** (2013 or later, 32- or 64-bit) installed
-- **.NET 8 SDK** (for building)
-- Visual Studio 2022 (recommended) or `dotnet` CLI
+#### Prerequisites
+- **Windows 10 or 11 (64-bit)**
+- **Microsoft Word desktop** (2013 or later) installed and activated
+- **[.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)**
 
-> ⚠️ This prototype **requires the desktop version of Microsoft Word**.
-> Word must remain installed for the app to use this architecture. There is
-> no fallback QR generator — by design.
-
----
-
-## How it works
-
-- `BarcodeFieldService` converts the UI settings into the Word field code
-  (escaping the data correctly). Example for the settings
-  `https://example.com`, `QR`, EC `H`, scale `150`:
-
-  ```
-  { DISPLAYBARCODE "https://example.com" QR \q H \s 150 }
-  ```
-
-  The braces are added by Word; the application inserts the field via
-  Word's `Fields.Add` API so Word recognizes it as a real field.
-
-- `WordService` uses **late-bound COM** (`Type.GetTypeFromProgID("Word.Application")`
-  + `Activator.CreateInstance`) so the project compiles even when the Word
-  Primary Interop Assemblies are not installed on the build machine.
-
-- `PdfService` calls Word's `ExportAsFixedFormat` to produce a PDF containing
-  the rendered barcode.
-
----
-
-## Build
-
-Using Visual Studio:
-1. Open `WordBarcodeStudio.csproj`.
-2. Set the configuration to **Release** (or **Debug**).
-3. Build → Build Solution (or `Ctrl+Shift+B`).
-
-Using the .NET CLI:
-
+#### Build Steps
 ```powershell
-cd WordBarcodeStudio
+# 1. Clone the repository
+git clone https://github.com/Harsha754-ml/Doclayer.git
+cd Doclayer
+
+# 2. Build the application
 dotnet build -c Release
-```
 
-The output is placed in `bin\Release\net8.0-windows\`.
-
----
-
-## Run
-
-From Visual Studio: press **F5** (or Ctrl+F5).
-
-From the CLI:
-
-```powershell
+# 3. Run DocLayer
 dotnet run -c Release
 ```
 
-Make sure Microsoft Word is installed and not blocked by an interactive
-dialog (e.g. a "first run" activation prompt) when you click **Generate**.
+#### Package the Installer Bundle
+```powershell
+# Build the complete installer and distribution zip
+pwsh -File installer\build_installer.ps1
+```
 
 ---
 
-## Using the app
+## 🚀 How to Use DocLayer (User Flow)
 
-1. Enter the barcode data (default: `https://example.com`).
-2. Select a **Barcode Type** (QR is default; QR and CODE128 are the focus).
-3. For QR, set **Error Correction** (`L/M/Q/H`) and **Scale** (`%`).
-4. (Optional) enable **Show encoded text** and set **Rotation**.
-5. Click **GENERATE**.
-   - Word is started in the background and renders the barcode.
-   - A preview appears (best-effort, extracted from Word) and the
-     generated field code is shown.
-6. Click **Open in Word** to inspect the real document/field.
-7. Click **Save DOCX** or **Export PDF** to write a file.
+```
+[1. Queue / Select Barcodes] ──> [2. Customize Data & Format] ──> [3. Click GENERATE] ──> [4. Preview & Export]
+```
 
-> **Run Word in background** (default on) hides Word. Turn it off to show
-> Word for debugging/troubleshooting.
+### Step 1: Manage Document Barcodes (Multi-Barcode Queue)
+- Look at the **Document Barcodes** card on the left.
+- Use **`+ Add Barcode`** to add additional barcode items to your document.
+- Use the **Checkboxes** on each item to select or deselect which barcodes to include in the generated document.
+- Click **`All`** or **`None`** for quick batch selection.
+- Click **`✕`** to delete an item from the queue.
+
+### Step 2: Configure Barcode Data & Options
+- Click on any barcode item in the queue to select it for editing.
+- **Item Header**: Customize the section title or label that appears above the barcode.
+- **Barcode Type**: Select from 8 supported standards:
+  - **QR**: Any URL, text, or payload (e.g. `https://example.com`)
+  - **CODE128**: High-density alphanumeric ASCII (e.g. `DOC-2026-X89`)
+  - **CODE39**: Industrial alphanumeric (e.g. `PART-9872`)
+  - **EAN13**: 12 or 13 numeric retail digits (e.g. `5901234123457`)
+  - **EAN8**: 7 or 8 numeric digits (e.g. `96385074`)
+  - **UPCA**: 11 or 12 numeric product digits (e.g. `012345678905`)
+  - **UPCE**: 6 to 8 numeric digits (e.g. `01234565`)
+  - **ITF14**: 13 or 14 numeric carton digits (e.g. `10012345678902`)
+- **Use Example**: Click the interactive **Use Example** button to immediately insert valid sample data for the chosen barcode type.
+- **Options & Advanced Drawer**: Customize Scale (`%`), Error Correction (`L/M/Q/H`), Show Text, Rotation, Colors, and twip height.
+
+### Step 3: Generate Document via Microsoft Word
+- Click the primary **`GENERATE (X ITEMS)`** button.
+- DocLayer connects to Word via COM, creates a document, inserts the native field codes, forces Word to render the barcodes, and extracts a high-DPI metafile preview onto the white paper sheet.
+
+### Step 4: Preview, Inspect, and Export
+- **Paper Canvas Preview**: Zoom and inspect the rendered barcode document in real-time.
+- **Copy Field Code**: Copy the exact Word `DISPLAYBARCODE` syntax to your clipboard.
+- **Open in Word**: Launch Microsoft Word to inspect and edit the live document with native fields.
+- **Save DOCX**: Save the `.docx` document to your chosen folder.
+- **Export PDF**: Generate a high-DPI PDF document with vector-sharp barcodes.
+
+### Step 5: Session History & Templates
+- Switch to the **History** tab in the sidebar to review past generations in the session and restore them with one click.
+- Switch to **Templates** to browse document layouts.
+- Switch to **Settings** to toggle Dark/Light mode and explore temporary cache files.
 
 ---
 
-## Supported DISPLAYBARCODE switches
+## 🗑️ Uninstallation
 
-The options panel is **data-driven**: it shows only the switches that are valid
-for the selected barcode type. All switches are Word's native `DISPLAYBARCODE`
-switches (no third-party generation):
-
-| Switch | Meaning | Applies to | UI control |
-|--------|---------|------------|------------|
-| `\s`   | Scale (10–1000%) | All | Number |
-| `\r`   | Rotation (0–3 → 0/90/180/270°) | All | Dropdown |
-| `\t`   | Show encoded text | All | Checkbox |
-| `\q`   | QR error correction (L/M/Q/H) | QR | Dropdown |
-| `\u`   | Unicode data | All | Checkbox |
-| `\h`   | Height (twips) | All | Number |
-| `\f`   | Foreground color | All | Dropdown |
-| `\b`   | Background color | All | Dropdown |
-| `\x`   | Fix invalid check digit | EAN/UPC | Checkbox |
-| `\d`   | Add Start/Stop chars | CODE39 | Checkbox |
-| `\c`   | ITF14 case code style (STD/2/3) | ITF14 | Dropdown |
-
-The preview extracts the barcode image Word actually rendered, so every
-combination of these switches is supported by the preview, Save DOCX, and
-Export PDF paths.
+DocLayer integrates with Windows Programs & Features:
+1. Open **Windows Settings** → **Apps** → **Installed Apps** (or Control Panel → Programs and Features).
+2. Locate **DocLayer** and click **Uninstall**.
+3. *Alternatively*, launch `Uninstall.exe` from your install directory or run:
+   ```powershell
+   DocLayer.Setup.exe --uninstall
+   ```
 
 ---
 
-## Project structure
+## 🛠️ Supported DISPLAYBARCODE Switches
+
+| Switch | Parameter | Description | Supported Types |
+|:------:|:---------:|:------------|:----------------|
+| `\s`   | `10-1000` | Scaling factor percentage | All |
+| `\q`   | `L/M/Q/H` | QR Error Correction level | QR |
+| `\r`   | `0-3`     | Rotation (0°, 90°, 180°, 270°) | All |
+| `\t`   | *flag*    | Display human-readable text | All 1D / 2D |
+| `\h`   | `twips`   | Height of barcode symbol | 1D Barcodes |
+| `\f`   | `0xRRGGBB`| Foreground bar color | All |
+| `\b`   | `0xRRGGBB`| Background sheet color | All |
+| `\x`   | *flag*    | Fix invalid check digit | EAN13, UPCA |
+| `\d`   | *flag*    | Start / Stop characters | CODE39 |
+| `\c`   | `STD/2/3` | Case code packaging style | ITF14 |
+
+---
+
+## 📂 Project Architecture
 
 ```
 WordBarcodeStudio/
-│
-├── Converters/
-│   └── BooleanToVisibilityConverter.cs
-├── Models/
-│   └── BarcodeSettings.cs
+├── Assets/                     # Application Icons (.ico, .png, .svg)
+├── Converters/                 # WPF Theme & Binding Converters
+├── Models/                     # BarcodeEntry, BarcodeOption, History Models
 ├── Services/
-│   ├── WordService.cs          # COM automation lifecycle
-│   ├── BarcodeFieldService.cs  # settings -> DISPLAYBARCODE field code
-│   ├── PdfService.cs           # Word -> PDF export
-│   └── Exceptions.cs           # WordNotAvailable / WordAutomation errors
-├── ViewModels/
-│   └── MainViewModel.cs        # state, commands, error handling
-├── Views/
-│   ├── MainWindow.xaml
-│   └── MainWindow.xaml.cs
-├── App.xaml / App.xaml.cs
-├── WordBarcodeStudio.csproj
-└── README.md
+│   ├── WordService.cs          # Microsoft Word COM automation & EMF clipboard extraction
+│   ├── BarcodeFieldService.cs  # DISPLAYBARCODE field compiler & format validator
+│   ├── PdfService.cs           # Word FixedFormat PDF exporter
+│   └── Exceptions.cs           # Diagnostic & COM exception handlers
+├── ViewModels/                 # MainViewModel (Navigation, Queue, Commands)
+├── Views/                      # MainWindow (Pitch-black shell, sidebar, inspector)
+├── installer/
+│   ├── DocLayer.Setup/         # Native WPF Setup Wizard & Uninstaller
+│   ├── DocLayer.iss            # Inno Setup configuration
+│   └── build_installer.ps1     # Automated release packager
+├── App.xaml / App.xaml.cs      # Core styling, brushes, geometry icons
+└── WordBarcodeStudio.csproj    # .NET 8 WPF project file
 ```
 
 ---
 
-## Temporary files
+## 📄 License
 
-Generated files live in:
-
-```
-%TEMP%\WordBarcodeStudio\
-```
-
-The document is kept in memory while the app runs; **Save DOCX** / **Export PDF**
-write copies to the location you choose. On exit, the hidden Word instance is
-quit and COM objects are released so no orphaned `WINWORD.EXE` processes remain.
-
----
-
-## Error handling
-
-| Situation | Message |
-|-----------|---------|
-| Word not installed | `Microsoft Word could not be found. This prototype requires the desktop version of Microsoft Word.` |
-| Word automation failure | `Unable to communicate with Microsoft Word. Please close any stuck Word processes and try again.` |
-| Invalid barcode data | `The provided data is not valid for the selected barcode type.` |
-| Empty input | `Enter barcode data first.` |
-| Save failure | `The document could not be saved. Check that the destination is writable.` |
-| PDF export failure | `PDF export failed. Check that the destination is writable.` |
-
-Raw COM stack traces are never shown to the user.
-
----
-
-## Test checklist
-
-### Test 1 — QR (basic)
-- Data: `https://example.com`, Type: `QR`
-- Expected: a valid QR code is generated by Word.
-
-### Test 2 — CODE128
-- Data: `HELLO-12345`, Type: `CODE128`
-- Expected: a valid CODE128 barcode is generated by Word.
-
-### Test 3 — QR switches
-- Error correction: `H`, Scale: `150`
-- Expected: the generated field code contains `\q H` and `\s 150`.
-
-### Test 4 — Word auto-start
-- Close Word completely, then click **Generate**.
-- Expected: the app launches Word automatically.
-
-### Test 5 — No Word
-- Run on a machine without Word installed.
-- Expected: a friendly error is shown, the app does not crash.
-
-### Test 6 — Persisted DOCX
-- Generate, **Save DOCX**, close the app, reopen the DOCX in Word.
-- Expected: the document still contains the generated barcode field/result.
-
-### Test 7 — PDF export
-- Click **Export PDF**.
-- Expected: the PDF contains the generated barcode.
-
----
-
-## Troubleshooting
-
-- **"Microsoft Word could not be found."**
-  Install the desktop version of Microsoft Word. The Microsoft Store / "Word
-  Online" web app is not sufficient — COM automation needs the desktop app.
-
-- **"Unable to communicate with Microsoft Word."**
-  Open Task Manager and end any stuck `WINWORD.EXE` processes, then try again.
-
-- **Generation succeeds but no preview image appears**
-  The preview is best-effort (Word must expose the barcode as an inline
-  picture so it can be saved). Use **Open in Word** or **Export PDF** to verify
-  the barcode — the critical proof is that **Word generated it**, not the
-  in-app preview.
-
-- **"Field generation failed."**
-  The data may be invalid for the selected symbology (e.g. EAN-13 needs
-  12–13 digits). Check the data, or switch the barcode type.
-
-- **COM / interop build errors**
-  This project uses late-bound COM and does **not** require the Word PIA.
-  Build on Windows with the .NET 8 SDK; do not add a `Microsoft.Office.Interop.Word`
-  reference unless you specifically want early binding.
-
-- **Leftover WINWORD.EXE processes**
-  The app quits Word on exit via `try/finally` cleanup. If you break into the
-  debugger and stop abruptly, a stray process may remain — end it in Task
-  Manager.
-
----
-
-## Out of scope (prototype constraints)
-
-No user accounts, cloud sync, databases, analytics, payments, licensing,
-batch processing, AI, multi-user support, or advanced template management.
-This prototype only proves:
-
-```
-Input → App → Word COM → DISPLAYBARCODE → Valid Word doc → QR/barcode
-```
+This project is licensed under the [MIT License](LICENSE).
+DocLayer is an independent product and is not affiliated with, sponsored by, or endorsed by Microsoft Corporation.
