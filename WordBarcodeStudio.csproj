@@ -11,13 +11,23 @@
     <RootNamespace>WordBarcodeStudio</RootNamespace>
     <AssemblyTitle>Doclayer</AssemblyTitle>
     <Product>Doclayer</Product>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="installer\**" />
+    <EmbeddedResource Remove="installer\**" />
+    <None Remove="installer\**" />
+    <Page Remove="installer\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SharpVectors.Reloaded" Version="1.7.5" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Assets\AppIcon.ico" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\app_icon.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Assets\logo.svg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

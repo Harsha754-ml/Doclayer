@@ -7,9 +7,8 @@ using System.Windows.Media;
 namespace WordBarcodeStudio;
 
 /// <summary>
-/// Swaps the application's colour resources between a refined dark and light palette.
-/// The XAML binds to these resources via DynamicResource, so changing them here
-/// re-themes the whole UI at runtime.
+/// Swaps the application's colour resources between a sleek pitch-black dark mode
+/// and a clean modern light mode.
 /// </summary>
 internal static class ThemeManager
 {
@@ -17,76 +16,76 @@ internal static class ThemeManager
 
     private static readonly Dictionary<string, (string Light, string Dark)> Palette = new()
     {
-        // Application surfaces
-        ["AppBg"] = ("#F8FAFC", "#07111F"),
-        ["SidebarBg"] = ("#FFFFFF", "#0B1527"),
-        ["SidebarBorder"] = ("#E2E8F0", "#15223A"),
-        ["HeaderBg"] = ("#FFFFFF", "#0A1324"),
-        ["HeaderBorder"] = ("#E2E8F0", "#15223A"),
-        ["CardBg"] = ("#FFFFFF", "#0F1C32"),
-        ["CardBorder"] = ("#E2E8F0", "#1E2F4D"),
-        ["CardBgElevated"] = ("#F8FAFC", "#14243F"),
-        ["CardBorderSubtle"] = ("#F1F5F9", "#172744"),
+        // Application surfaces (Sleek neutral dark / pitch black in Dark mode)
+        ["AppBg"] = ("#F8FAFC", "#0A0A0A"),
+        ["SidebarBg"] = ("#FFFFFF", "#121212"),
+        ["SidebarBorder"] = ("#E4E4E7", "#1E1E1E"),
+        ["HeaderBg"] = ("#FFFFFF", "#121212"),
+        ["HeaderBorder"] = ("#E4E4E7", "#1E1E1E"),
+        ["CardBg"] = ("#FFFFFF", "#161616"),
+        ["CardBorder"] = ("#E4E4E7", "#242424"),
+        ["CardBgElevated"] = ("#F4F4F5", "#1C1C1C"),
+        ["CardBorderSubtle"] = ("#E4E4E7", "#202020"),
 
         // Typography & Text
-        ["TextPrimary"] = ("#0F172A", "#F8FAFC"),
-        ["TextSecondary"] = ("#475569", "#94A3B8"),
-        ["MutedText"] = ("#94A3B8", "#64748B"),
-        ["FieldLabelFg"] = ("#334155", "#94A3B8"),
-        ["InputText"] = ("#0F172A", "#F8FAFC"),
+        ["TextPrimary"] = ("#09090B", "#FFFFFF"),
+        ["TextSecondary"] = ("#52525B", "#A1A1AA"),
+        ["MutedText"] = ("#71717A", "#71717A"),
+        ["FieldLabelFg"] = ("#27272A", "#A1A1AA"),
+        ["InputText"] = ("#09090B", "#FFFFFF"),
 
-        // Brand & Accents
-        ["PrimaryBrand"] = ("#2563EB", "#3B82F6"),
-        ["AccentPurple"] = ("#7C3AED", "#8B5CF6"),
-        ["AccentCyan"] = ("#0891B2", "#22D3EE"),
+        // Brand & Neutral Accents
+        ["PrimaryBrand"] = ("#18181B", "#FFFFFF"),
+        ["AccentPurple"] = ("#71717A", "#A1A1AA"),
+        ["AccentCyan"] = ("#09090B", "#E4E4E7"),
 
-        // Primary Buttons
-        ["PrimaryBtnBg"] = ("#2563EB", "#2563EB"),
-        ["PrimaryBtnHover"] = ("#1D4ED8", "#3B82F6"),
-        ["PrimaryBtnFg"] = ("#FFFFFF", "#FFFFFF"),
+        // Primary Buttons (High contrast clean)
+        ["PrimaryBtnBg"] = ("#09090B", "#FFFFFF"),
+        ["PrimaryBtnHover"] = ("#27272A", "#E4E4E7"),
+        ["PrimaryBtnFg"] = ("#FFFFFF", "#000000"),
 
         // Secondary Buttons
-        ["SecondaryBtnBg"] = ("#F1F5F9", "#14223A"),
-        ["SecondaryBtnHover"] = ("#E2E8F0", "#1C2E4E"),
-        ["SecondaryBtnFg"] = ("#1E293B", "#E2E8F0"),
-        ["SecondaryBtnBorder"] = ("#CBD5E1", "#223556"),
+        ["SecondaryBtnBg"] = ("#F4F4F5", "#1A1A1A"),
+        ["SecondaryBtnHover"] = ("#E4E4E7", "#262626"),
+        ["SecondaryBtnFg"] = ("#18181B", "#F4F4F5"),
+        ["SecondaryBtnBorder"] = ("#D4D4D8", "#2E2E2E"),
 
         // Input Controls
-        ["TextBoxBg"] = ("#FFFFFF", "#091222"),
-        ["TextBoxBorder"] = ("#CBD5E1", "#1C2E4C"),
-        ["TextBoxFocusBorder"] = ("#2563EB", "#3B82F6"),
-        ["ControlBorder"] = ("#CBD5E1", "#1E2F4D"),
+        ["TextBoxBg"] = ("#FFFFFF", "#0F0F0F"),
+        ["TextBoxBorder"] = ("#D4D4D8", "#262626"),
+        ["TextBoxFocusBorder"] = ("#18181B", "#52525B"),
+        ["ControlBorder"] = ("#D4D4D8", "#262626"),
 
         // Navigation
-        ["NavActiveBg"] = ("#EEF2FF", "#182846"),
-        ["NavActiveBorder"] = ("#6366F1", "#3B82F6"),
-        ["NavActiveFg"] = ("#2563EB", "#60A5FA"),
-        ["NavInactiveFg"] = ("#64748B", "#94A3B8"),
-        ["NavHoverBg"] = ("#F8FAFC", "#101D35"),
+        ["NavActiveBg"] = ("#E4E4E7", "#242424"),
+        ["NavActiveBorder"] = ("#18181B", "#52525B"),
+        ["NavActiveFg"] = ("#09090B", "#FFFFFF"),
+        ["NavInactiveFg"] = ("#71717A", "#A1A1AA"),
+        ["NavHoverBg"] = ("#F4F4F5", "#1A1A1A"),
 
-        // Workspace Preview Area
-        ["PreviewBg"] = ("#F1F5F9", "#060D18"),
-        ["PreviewBorder"] = ("#E2E8F0", "#162339"),
-        ["PreviewSheetBg"] = ("#FFFFFF", "#0D1829"),
-        ["PreviewSheetBorder"] = ("#CBD5E1", "#1C2D49"),
+        // Workspace Preview Area - Canvas & Paper Sheet
+        ["PreviewBg"] = ("#F4F4F5", "#0E0E0E"),
+        ["PreviewBorder"] = ("#E4E4E7", "#1E1E1E"),
+        ["PreviewSheetBg"] = ("#FFFFFF", "#FFFFFF"), // Pure white paper canvas so black barcode is always visible
+        ["PreviewSheetBorder"] = ("#D4D4D8", "#333333"),
 
         // Code Inspector
-        ["CodeBlockBg"] = ("#0F172A", "#050B14"),
-        ["CodeBlockBorder"] = ("#1E293B", "#142036"),
+        ["CodeBlockBg"] = ("#18181B", "#0D0D0D"),
+        ["CodeBlockBorder"] = ("#27272A", "#222222"),
         ["CodeBlockFg"] = ("#0284C7", "#38BDF8"),
 
         // Status & Alerts
-        ["StatusBg"] = ("#F8FAFC", "#070E1A"),
-        ["StatusFg"] = ("#334155", "#94A3B8"),
+        ["StatusBg"] = ("#F4F4F5", "#0F0F0F"),
+        ["StatusFg"] = ("#52525B", "#A1A1AA"),
         ["StatusSuccess"] = ("#16A34A", "#22C55E"),
         ["StatusWarning"] = ("#D97706", "#F59E0B"),
         ["StatusError"] = ("#DC2626", "#EF4444"),
-        ["StatusInfo"] = ("#2563EB", "#3B82F6"),
+        ["StatusInfo"] = ("#18181B", "#FFFFFF"),
 
         // Legacy compat keys
-        ["HeaderCardBg"] = ("#2563EB", "#1E3A8A"),
+        ["HeaderCardBg"] = ("#18181B", "#18181B"),
         ["HeaderText"] = ("#FFFFFF", "#FFFFFF"),
-        ["HeaderSub"] = ("#DBEAFE", "#BFDBFE"),
+        ["HeaderSub"] = ("#E4E4E7", "#A1A1AA"),
     };
 
     public static void Initialize() => Apply(LoadPreference());
@@ -126,7 +125,6 @@ internal static class ThemeManager
         {
         }
 
-        // Default to dark mode for our modern developer-first UI
         return true;
     }
 

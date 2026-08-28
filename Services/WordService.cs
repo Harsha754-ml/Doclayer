@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace WordBarcodeStudio.Services;
 
@@ -18,8 +17,21 @@ namespace WordBarcodeStudio.Services;
 /// </summary>
 public class WordService : IDisposable
 {
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool OpenClipboard(IntPtr hWndNewOwner);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool CloseClipboard();
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr GetClipboardData(uint uFormat);
+
+    private const uint CF_BITMAP = 2;
+    private const uint CF_ENHMETAFILE = 14;
+
     private dynamic? _wordApp;
     private dynamic? _doc;
+    private string? _currentDocxPath;
     private bool _disposed;
 
     public string TempDirectory { get; }
@@ -40,7 +52,7 @@ public class WordService : IDisposable
         if (wordType == null)
         {
             throw new WordNotAvailableException(
-                "Microsoft Word could not be found.\n\nThis prototype requires the desktop version of Microsoft Word.");
+                "Microsoft Word could not be found.\n\nThis application requires the desktop version of Microsoft Word.");
         }
 
         try
@@ -62,7 +74,7 @@ public class WordService : IDisposable
 
         // Word only materializes the DISPLAYBARCODE graphic while it is visible, so
         // we must show it during field creation/update even in background mode, then
-        // hide it again afterwards. Otherwise the rendered shape comes out blank.
+        // hide it again afterwards.
         bool restoreHidden = runInBackground;
 
         try
@@ -75,15 +87,20 @@ public class WordService : IDisposable
             dynamic range = _doc.Content;
             dynamic fields = _doc.Fields;
 
-            // Create an empty field, then set its code. This avoids passing the
-            // code as the 3rd argument to Fields.Add, which is unreliable via
-            // late-bound COM.
+            // Create an empty field, then set its code.
             dynamic field = fields.Add(range);
             field.Code.Text = fieldCode;
             field.Update();
 
+            try
+            {
+                _doc.ActiveWindow.View.ShowFieldCodes = false;
+            }
+            catch { }
+
             string docxPath = Path.Combine(TempDirectory, $"Barcode_{Guid.NewGuid():N}.docx");
             _doc.SaveAs2(docxPath, 16); // wdFormatDocumentDefault (.docx)
+            _currentDocxPath = docxPath;
 
             return new BarcodeResult
             {
@@ -106,17 +123,78 @@ public class WordService : IDisposable
         }
     }
 
+    public BarcodeResult GenerateMultipleBarcodes(IEnumerable<(string FieldCode, string Label)> items, bool runInBackground)
+    {
+        EnsureWord(runInBackground);
+        bool restoreHidden = runInBackground;
+
+        try
+        {
+            if (restoreHidden) _wordApp!.Visible = true;
+
+            CloseCurrentDoc();
+
+            _doc = _wordApp!.Documents.Add();
+            dynamic fields = _doc.Fields;
+
+            var itemList = items.ToList();
+            for (int i = 0; i < itemList.Count; i++)
+            {
+                var item = itemList[i];
+                dynamic endRange = _doc.Content;
+                endRange.Collapse(0); // wdCollapseEnd = 0
+
+                if (i > 0)
+                {
+                    endRange.InsertParagraphAfter();
+                    endRange.Collapse(0);
+                }
+
+                if (!string.IsNullOrWhiteSpace(item.Label))
+                {
+                    endRange.InsertAfter(item.Label + "\n");
+                    endRange.Collapse(0);
+                }
+
+                dynamic field = fields.Add(endRange);
+                field.Code.Text = item.FieldCode;
+                field.Update();
+            }
+
+            try
+            {
+                _doc.ActiveWindow.View.ShowFieldCodes = false;
+            }
+            catch { }
+
+            string docxPath = Path.Combine(TempDirectory, $"MultiBarcode_{Guid.NewGuid():N}.docx");
+            _doc.SaveAs2(docxPath, 16); // wdFormatDocumentDefault (.docx)
+            _currentDocxPath = docxPath;
+
+            return new BarcodeResult
+            {
+                FieldCode = string.Join("\n", itemList.Select(it => it.FieldCode)),
+                DocxPath = docxPath
+            };
+        }
+        catch (WordNotAvailableException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new WordAutomationException(
+                "Multi-barcode generation failed.\nCheck data and barcode types, then try again.", ex);
+        }
+        finally
+        {
+            if (restoreHidden) { try { _wordApp!.Visible = false; } catch { } }
+        }
+    }
+
     /// <summary>
     /// Pulls the rendered barcode out of Word and saves it as a PNG so the UI
-    /// can show a real preview. Must be called on an STA thread (the UI thread)
-    /// because it may read the clipboard.
-    /// </summary>
-    /// <summary>
-    /// Pulls the rendered barcode out of Word and saves it as a PNG so the UI can
-    /// show a real preview. Must be called on an STA thread (the UI thread).
-    /// Word only materializes the barcode graphic when it is visible, so when the
-    /// app is running Word in the background we briefly show Word, let it render,
-    /// then hide it again.
+    /// can show a real preview. Must be called on an STA thread (the UI thread).
     /// </summary>
     public async Task<string?> ExtractPreviewAsync()
     {
@@ -130,8 +208,45 @@ public class WordService : IDisposable
         string? result = null;
         try
         {
-            await Task.Delay(200); // give Word a moment to render the field result
-            result = TryExtract();
+            await Task.Delay(300); // give Word time to render the field graphic
+
+            // Attempt 1: Copy the field selection as picture
+            try
+            {
+                dynamic fields = _doc.Fields;
+                if (fields.Count >= 1)
+                {
+                    dynamic field = fields[1];
+                    field.Select();
+                    _wordApp.Selection.CopyAsPicture();
+                    result = ReadClipboardPng();
+                }
+            }
+            catch { }
+
+            // Attempt 2: Copy whole document content
+            if (result == null)
+            {
+                try
+                {
+                    _doc.Content.Select();
+                    _wordApp.Selection.CopyAsPicture();
+                    result = ReadClipboardPng();
+                }
+                catch { }
+            }
+
+            // Attempt 3: Standard copy
+            if (result == null)
+            {
+                try
+                {
+                    _doc.Content.Select();
+                    _wordApp.Selection.Copy();
+                    result = ReadClipboardPng();
+                }
+                catch { }
+            }
         }
         finally
         {
@@ -142,106 +257,6 @@ public class WordService : IDisposable
         return result;
     }
 
-    private string? TryExtract()
-    {
-        if (_doc == null) return null;
-
-        // 1) Most reliable: let Word export the document to filtered HTML, which
-        //    rasterizes the barcode as a real image file under a .files folder.
-        var html = ExtractPreviewViaHtml();
-        if (html != null) return html;
-
-        // 2) Inline picture -> SaveAsPicture.
-        try
-        {
-            dynamic inline = _doc.InlineShapes;
-            if (inline.Count >= 1)
-            {
-                dynamic shape = inline[inline.Count];
-                string p = NewPng();
-                shape.SaveAsPicture(p);
-                if (ValidImage(p)) return p;
-            }
-        }
-        catch { }
-
-        // 3) Floating shape -> CopyPicture -> clipboard.
-        try
-        {
-            dynamic shapes = _doc.Shapes;
-            if (shapes.Count >= 1)
-            {
-                dynamic shape = shapes[shapes.Count];
-                shape.CopyPicture();
-                var r = ReadClipboardPng();
-                if (r != null) return r;
-            }
-        }
-        catch { }
-
-        // 4) Field -> select -> copy as picture -> clipboard (type-agnostic).
-        try
-        {
-            dynamic fields = _doc.Fields;
-            if (fields.Count >= 1)
-            {
-                dynamic field = fields[fields.Count];
-                field.Select();
-                dynamic sel = _wordApp!.Selection;
-                sel.CopyAsPicture();
-                var r = ReadClipboardPng();
-                if (r != null) return r;
-            }
-        }
-        catch { }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Saves a throwaway copy of the document as filtered HTML. Word converts the
-    /// DISPLAYBARCODE result into a raster image inside the companion .files folder,
-    /// which we then copy out and use as the preview.
-    /// </summary>
-    private string? ExtractPreviewViaHtml()
-    {
-        try
-        {
-            string htmlPath = Path.Combine(TempDirectory, $"pv_{Guid.NewGuid():N}.htm");
-            _doc!.SaveCopyAs(htmlPath, 10); // wdFormatFilteredHTML
-
-            string? filesDir = Directory
-                .GetDirectories(TempDirectory, "*.files")
-                .OrderByDescending(d => Directory.GetLastWriteTimeUtc(d))
-                .FirstOrDefault();
-
-            if (filesDir == null || !Directory.Exists(filesDir)) return null;
-
-            var img = Directory
-                .GetFiles(filesDir, "*.*")
-                .Where(f => new[] { ".png", ".gif", ".jpg", ".jpeg" }
-                    .Any(e => f.EndsWith(e, StringComparison.OrdinalIgnoreCase)))
-                .OrderByDescending(f => new FileInfo(f).Length)
-                .FirstOrDefault();
-
-            if (img == null) return null;
-
-            string ext = Path.GetExtension(img);
-            string outPath = Path.Combine(TempDirectory, $"preview_{Guid.NewGuid():N}{ext}");
-            File.Copy(img, outPath);
-
-            // Clean up the temporary HTML export.
-            try { if (File.Exists(htmlPath)) File.Delete(htmlPath); } catch { }
-            try { if (filesDir != null) Directory.Delete(filesDir, true); } catch { }
-
-            return ValidImage(outPath) ? outPath : null;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private string NewPng() => Path.Combine(TempDirectory, $"preview_{Guid.NewGuid():N}.png");
 
     private static bool ValidImage(string p)
@@ -250,8 +265,7 @@ public class WordService : IDisposable
         {
             if (!File.Exists(p)) return false;
             var info = new FileInfo(p);
-            // A real barcode image is well over a few hundred bytes.
-            return info.Length > 200;
+            return info.Length > 100;
         }
         catch
         {
@@ -264,32 +278,54 @@ public class WordService : IDisposable
         string p = NewPng();
         try
         {
-            if (!Clipboard.ContainsData(DataFormats.Bitmap) &&
-                !Clipboard.ContainsData(DataFormats.EnhancedMetafile))
-            {
-                return null;
-            }
+            if (!OpenClipboard(IntPtr.Zero)) return null;
 
-            // Direct bitmap is the easy case.
-            if (Clipboard.ContainsData(DataFormats.Bitmap) &&
-                Clipboard.GetData(DataFormats.Bitmap) is Bitmap bmp)
+            try
             {
-                bmp.Save(p, ImageFormat.Png);
-                if (ValidImage(p)) return p;
-            }
+                IntPtr hEmf = GetClipboardData(CF_ENHMETAFILE);
+                if (hEmf != IntPtr.Zero)
+                {
+                    using var mf = new Metafile(hEmf, false);
+                    var header = mf.GetMetafileHeader();
+                    int w = (int)header.Bounds.Width;
+                    int h = (int)header.Bounds.Height;
+                    if (w <= 0 || h <= 0)
+                    {
+                        w = Math.Max(250, mf.Width);
+                        h = Math.Max(250, mf.Height);
+                    }
+                    if (w < 250 || h < 250)
+                    {
+                        float factor = Math.Max(350f / Math.Max(1, w), 350f / Math.Max(1, h));
+                        w = Math.Max(100, (int)(w * factor));
+                        h = Math.Max(100, (int)(h * factor));
+                    }
+                    using var bmp = new Bitmap(w, h);
+                    using var g = Graphics.FromImage(bmp);
+                    g.Clear(System.Drawing.Color.White);
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                    g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                    g.DrawImage(mf, 0, 0, w, h);
+                    bmp.Save(p, ImageFormat.Png);
+                    if (ValidImage(p)) return p;
+                }
 
-            // Enhanced metafile: render onto a bitmap so PNG encoding is reliable.
-            if (Clipboard.ContainsData(DataFormats.EnhancedMetafile) &&
-                Clipboard.GetData(DataFormats.EnhancedMetafile) is Metafile mf)
+                IntPtr hBmp = GetClipboardData(CF_BITMAP);
+                if (hBmp != IntPtr.Zero)
+                {
+                    using var bmpSource = System.Drawing.Image.FromHbitmap(hBmp);
+                    using var bmp = new Bitmap(bmpSource.Width, bmpSource.Height);
+                    using var g = Graphics.FromImage(bmp);
+                    g.Clear(System.Drawing.Color.White);
+                    g.DrawImage(bmpSource, 0, 0, bmpSource.Width, bmpSource.Height);
+                    bmp.Save(p, ImageFormat.Png);
+                    if (ValidImage(p)) return p;
+                }
+            }
+            finally
             {
-                int w = Math.Max(32, Math.Min(mf.Width, 4096));
-                int h = Math.Max(32, Math.Min(mf.Height, 4096));
-                using var outBmp = new Bitmap(w, h);
-                using var g = Graphics.FromImage(outBmp);
-                g.FillRectangle(Brushes.White, 0, 0, w, h);
-                g.DrawImage(mf, 0, 0, w, h);
-                outBmp.Save(p, ImageFormat.Png);
-                if (ValidImage(p)) return p;
+                CloseClipboard();
             }
         }
         catch
@@ -337,7 +373,6 @@ public class WordService : IDisposable
 
         try
         {
-            // Save a throwaway copy and open it in the user's normal Word.
             string tempPath = Path.Combine(TempDirectory, $"Open_{Guid.NewGuid():N}.docx");
             _doc.SaveCopyAs(tempPath);
             using var process = Process.Start(new ProcessStartInfo(tempPath) { UseShellExecute = true });
@@ -345,7 +380,6 @@ public class WordService : IDisposable
         }
         catch
         {
-            // If shell open fails, reveal our Word instance with the document.
             ShowWordFallback();
         }
     }

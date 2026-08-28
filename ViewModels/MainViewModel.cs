@@ -29,6 +29,28 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         BarcodeTypes = BarcodeFieldService.BarcodeTypes;
 
+        // Initialize default multi-item list
+        Entries = new ObservableCollection<BarcodeEntry>
+        {
+            new BarcodeEntry { Label = "Product URL", Data = "https://example.com", BarcodeType = "QR", IsSelected = true },
+            new BarcodeEntry { Label = "Serial Number", Data = "DOC-2026-X89", BarcodeType = "CODE128", IsSelected = true },
+            new BarcodeEntry { Label = "EAN Retail Code", Data = "5901234123457", BarcodeType = "EAN13", IsSelected = true }
+        };
+
+        SelectedEntry = Entries[0];
+
+        foreach (var entry in Entries)
+        {
+            entry.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(BarcodeEntry.IsSelected))
+                {
+                    OnPropertyChanged(nameof(SelectedEntriesCount));
+                    OnPropertyChanged(nameof(GenerateButtonLabel));
+                }
+            };
+        }
+
         PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(SelectedBarcodeType))
@@ -48,9 +70,110 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         ClearHistoryCommand = new RelayCommand(_ => HistoryItems.Clear());
         SelectHistoryItemCommand = new RelayCommand(p => SelectHistoryItem(p as GenerationHistoryItem));
         OpenTempFolderCommand = new RelayCommand(_ => OpenTempFolder());
+        FillExampleDataCommand = new RelayCommand(_ => FillExampleData());
+
+        // Multi-entry queue commands
+        AddEntryCommand = new RelayCommand(_ => AddEntry());
+        RemoveEntryCommand = new RelayCommand(p => RemoveEntry(p as BarcodeEntry));
+        SelectAllEntriesCommand = new RelayCommand(_ => SetAllEntriesSelected(true));
+        DeselectAllEntriesCommand = new RelayCommand(_ => SetAllEntriesSelected(false));
+        SelectEntryForEditCommand = new RelayCommand(p => SelectEntryForEdit(p as BarcodeEntry));
 
         ThemeButtonLabel = ThemeManager.IsDark ? "Light mode" : "Dark mode";
     }
+
+    #region Multi-Barcode Queue Management
+
+    public ObservableCollection<BarcodeEntry> Entries { get; }
+
+    private BarcodeEntry? _selectedEntry;
+    public BarcodeEntry? SelectedEntry
+    {
+        get => _selectedEntry;
+        set
+        {
+            if (_selectedEntry != value)
+            {
+                _selectedEntry = value;
+                OnPropertyChanged();
+                if (_selectedEntry != null)
+                {
+                    Settings.Data = _selectedEntry.Data;
+                    SelectedBarcodeType = _selectedEntry.BarcodeType;
+                    OnPropertyChanged(nameof(Settings));
+                }
+            }
+        }
+    }
+
+    public int SelectedEntriesCount => Entries.Count(e => e.IsSelected);
+
+    public ICommand AddEntryCommand { get; }
+    public ICommand RemoveEntryCommand { get; }
+    public ICommand SelectAllEntriesCommand { get; }
+    public ICommand DeselectAllEntriesCommand { get; }
+    public ICommand SelectEntryForEditCommand { get; }
+
+    private void AddEntry()
+    {
+        var type = BarcodeTypes.ElementAtOrDefault((Entries.Count) % BarcodeTypes.Count()) ?? "QR";
+        var info = BarcodeFieldService.GetTypeInfo(type);
+        var newEntry = new BarcodeEntry
+        {
+            Label = $"Item #{Entries.Count + 1}",
+            BarcodeType = type,
+            Data = info.Example,
+            IsSelected = true
+        };
+
+        newEntry.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(BarcodeEntry.IsSelected))
+            {
+                OnPropertyChanged(nameof(SelectedEntriesCount));
+                OnPropertyChanged(nameof(GenerateButtonLabel));
+            }
+        };
+
+        Entries.Add(newEntry);
+        SelectedEntry = newEntry;
+        OnPropertyChanged(nameof(SelectedEntriesCount));
+        OnPropertyChanged(nameof(GenerateButtonLabel));
+    }
+
+    private void RemoveEntry(BarcodeEntry? entry)
+    {
+        if (entry != null && Entries.Count > 1)
+        {
+            Entries.Remove(entry);
+            if (SelectedEntry == entry)
+            {
+                SelectedEntry = Entries.FirstOrDefault();
+            }
+            OnPropertyChanged(nameof(SelectedEntriesCount));
+            OnPropertyChanged(nameof(GenerateButtonLabel));
+        }
+    }
+
+    private void SetAllEntriesSelected(bool selected)
+    {
+        foreach (var entry in Entries)
+        {
+            entry.IsSelected = selected;
+        }
+        OnPropertyChanged(nameof(SelectedEntriesCount));
+        OnPropertyChanged(nameof(GenerateButtonLabel));
+    }
+
+    private void SelectEntryForEdit(BarcodeEntry? entry)
+    {
+        if (entry != null)
+        {
+            SelectedEntry = entry;
+        }
+    }
+
+    #endregion
 
     #region Navigation
 
@@ -138,6 +261,20 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     public BarcodeSettings Settings { get; }
     public IEnumerable<string> BarcodeTypes { get; }
 
+    public BarcodeTypeInfo CurrentTypeInfo => BarcodeFieldService.GetTypeInfo(Settings.BarcodeType);
+
+    public ICommand FillExampleDataCommand { get; }
+
+    public void FillExampleData()
+    {
+        Settings.Data = CurrentTypeInfo.Example;
+        if (SelectedEntry != null)
+        {
+            SelectedEntry.Data = Settings.Data;
+        }
+        OnPropertyChanged(nameof(Settings));
+    }
+
     public string SelectedBarcodeType
     {
         get => Settings.BarcodeType;
@@ -146,7 +283,12 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             if (Settings.BarcodeType != value)
             {
                 Settings.BarcodeType = value;
+                if (SelectedEntry != null)
+                {
+                    SelectedEntry.BarcodeType = value;
+                }
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(CurrentTypeInfo));
             }
         }
     }
@@ -196,7 +338,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private string _generateButtonLabel = "GENERATE";
     public string GenerateButtonLabel
     {
-        get => _isGenerating ? "GENERATING..." : _generateButtonLabel;
+        get
+        {
+            if (_isGenerating) return "GENERATING...";
+            int count = SelectedEntriesCount;
+            if (count > 1) return $"GENERATE ({count} ITEMS)";
+            if (count == 1) return "GENERATE (1 ITEM)";
+            return "GENERATE";
+        }
         set { _generateButtonLabel = value; OnPropertyChanged(); }
     }
 
@@ -281,6 +430,33 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         if (IsGenerating) return;
 
+        // Sync currently edited data back to SelectedEntry
+        if (SelectedEntry != null)
+        {
+            SelectedEntry.Data = Settings.Data;
+            SelectedEntry.BarcodeType = Settings.BarcodeType;
+        }
+
+        var selectedEntries = Entries.Where(e => e.IsSelected).ToList();
+        if (selectedEntries.Count == 0)
+        {
+            MessageBox.Show("Please select at least one barcode to generate.", "DocLayer", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // Validate all selected entries
+        for (int i = 0; i < selectedEntries.Count; i++)
+        {
+            var entry = selectedEntries[i];
+            if (!BarcodeFieldService.ValidateData(entry.Data, entry.BarcodeType, out string err))
+            {
+                GenerationStatus = "Ready";
+                GenerateButtonLabel = "GENERATE";
+                MessageBox.Show($"Validation error in [{entry.Label}]:\n\n{err}", "DocLayer", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+        }
+
         IsGenerating = true;
         CanAct = false;
         PreviewImage = null;
@@ -288,17 +464,6 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
-            if (!BarcodeFieldService.ValidateData(Settings.Data, Settings.BarcodeType, out string err))
-            {
-                GenerationStatus = "Ready";
-                GenerateButtonLabel = "GENERATE";
-                MessageBox.Show(err, "DocLayer", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            IEnumerable<BarcodeOption> options = BasicOptions.Concat(AdvancedOptions);
-            string fieldCode = BarcodeFieldService.BuildFieldCode(Settings.Data, Settings.BarcodeType, options);
-
             GenerationStatus = "Starting Word...";
             WordStatus = "Connecting";
             await Task.Delay(30);
@@ -308,17 +473,37 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             GenerationStatus = "Creating document...";
             await Task.Delay(30);
 
-            var result = _word.GenerateBarcode(fieldCode, Settings.RunWordInBackground);
+            IEnumerable<BarcodeOption> options = BasicOptions.Concat(AdvancedOptions);
+            var buildItems = new List<(string FieldCode, string Label)>();
 
-            GenerationStatus = "Inserting barcode field...";
+            foreach (var entry in selectedEntries)
+            {
+                // If it's the currently selected entry, use full options from UI
+                IEnumerable<BarcodeOption> itemOptions = (entry == SelectedEntry)
+                    ? options
+                    : BarcodeOptionCatalog.ForType(entry.BarcodeType);
+
+                string code = BarcodeFieldService.BuildFieldCode(entry.Data, entry.BarcodeType, itemOptions);
+                buildItems.Add((code, entry.Label));
+            }
+
+            GenerationStatus = $"Generating {selectedEntries.Count} barcode(s)...";
             await Task.Delay(30);
-            GenerationStatus = "Updating barcode...";
-            await Task.Delay(30);
+
+            BarcodeResult result;
+            if (buildItems.Count == 1)
+            {
+                result = _word.GenerateBarcode(buildItems[0].FieldCode, Settings.RunWordInBackground);
+            }
+            else
+            {
+                result = _word.GenerateMultipleBarcodes(buildItems, Settings.RunWordInBackground);
+            }
 
             FieldCodePreview = result.FieldCode;
 
-            GenerationStatus = "Generating preview...";
-            await Task.Delay(30);
+            GenerationStatus = "Generating live preview...";
+            await Task.Delay(50);
 
             string? previewPath = await _word.ExtractPreviewAsync();
             if (!string.IsNullOrEmpty(previewPath) && File.Exists(previewPath))
@@ -339,8 +524,8 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             // Add to session history
             var historyItem = new GenerationHistoryItem
             {
-                BarcodeType = Settings.BarcodeType,
-                Data = Settings.Data,
+                BarcodeType = selectedEntries.Count == 1 ? selectedEntries[0].BarcodeType : $"BATCH ({selectedEntries.Count})",
+                Data = string.Join("; ", selectedEntries.Select(e => $"{e.Label}: {e.Data}")),
                 FieldCode = result.FieldCode,
                 DocxPath = result.DocxPath,
                 PreviewImage = PreviewImage
@@ -402,7 +587,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         var dlg = new Microsoft.Win32.SaveFileDialog
         {
-            FileName = $"DocLayer_{Settings.BarcodeType}_{DateTime.Now:yyyyMMdd_HHmmss}.docx",
+            FileName = $"DocLayer_Output_{DateTime.Now:yyyyMMdd_HHmmss}.docx",
             Filter = "Word Document (*.docx)|*.docx"
         };
 
@@ -431,7 +616,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         var dlg = new Microsoft.Win32.SaveFileDialog
         {
-            FileName = $"DocLayer_{Settings.BarcodeType}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf",
+            FileName = $"DocLayer_Output_{DateTime.Now:yyyyMMdd_HHmmss}.pdf",
             Filter = "PDF (*.pdf)|*.pdf"
         };
 

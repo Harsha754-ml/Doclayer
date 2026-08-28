@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>DocLayer.Setup</AssemblyName>
+    <RootNamespace>DocLayer.Setup</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>DocLayer Team</Authors>
+    <Company>DocLayer</Company>
+    <Product>DocLayer Installer</Product>
+    <ApplicationIcon>..\..\Assets\AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+</Project>

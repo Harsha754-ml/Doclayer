@@ -4,8 +4,8 @@
         xmlns:conv="clr-namespace:WordBarcodeStudio.Converters"
         xmlns:models="clr-namespace:WordBarcodeStudio.Models"
         Title="DocLayer - Automation Layer for Microsoft Word"
-        Icon="{DynamicResource LogoDrawing}"
-        Width="1120" Height="820"
+        Icon="../Assets/AppIcon.ico"
+        Width="1140" Height="840"
         MinWidth="920" MinHeight="680"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI Variable Text, Segoe UI, sans-serif"
@@ -79,7 +79,7 @@
                                 Background="{DynamicResource CardBgElevated}"
                                 BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
                                 Margin="0,0,12,0">
-                            <Image Source="{DynamicResource LogoDrawing}" Width="28" Height="28"
+                            <Image Source="{DynamicResource LogoDrawing}" Width="26" Height="26"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel VerticalAlignment="Center">
@@ -445,7 +445,7 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <!-- Status dot -->
-                                <Ellipse Grid.Column="0" Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,8,0"
+                                <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,8,0"
                                          Fill="{Binding WordStatus, Converter={StaticResource StatusToBrush}}" />
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="Word Automation" FontSize="11" FontWeight="SemiBold"
@@ -492,9 +492,9 @@
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="DocLayer" FontSize="16" FontWeight="Bold"
                                        Foreground="{DynamicResource TextPrimary}" />
-                            <TextBlock Text=" • " FontSize="14" Foreground="{DynamicResource MutedText}" />
+                            <TextBlock Text=" / " FontSize="14" Foreground="{DynamicResource MutedText}" />
                             <TextBlock Text="{Binding CurrentTab}" FontSize="14" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource PrimaryBrand}" VerticalAlignment="Center" />
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
                         </StackPanel>
                         <TextBlock Text="A programmable automation layer for Microsoft Word documents."
                                    FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0" />
@@ -519,7 +519,7 @@
                                 ToolTip="Toggle Dark/Light Mode">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Path Stretch="Uniform" Width="13" Height="13" Margin="0,0,6,0"
-                                      Fill="{DynamicResource PrimaryBrand}">
+                                      Fill="{DynamicResource TextPrimary}">
                                     <Path.Style>
                                         <Style TargetType="Path">
                                             <Setter Property="Data" Value="{StaticResource IconSunGeo}" />
@@ -559,19 +559,154 @@
                         <!-- LEFT COLUMN: Input, Configuration, Options, Primary Generate -->
                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
 
-                            <!-- Section 1: Barcode Data -->
+                            <!-- Section 0: Multi-Barcode Selection Queue / Layers -->
+                            <Border Style="{StaticResource ModernCard}" Padding="14">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="Document Barcodes" Style="{StaticResource FieldLabelText}" Margin="0,0,8,0" />
+                                            <Border Background="{DynamicResource CardBgElevated}" CornerRadius="10"
+                                                    BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                                                    Padding="6,1" VerticalAlignment="Center">
+                                                <TextBlock FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}">
+                                                    <Run Text="{Binding SelectedEntriesCount, Mode=OneWay}" />
+                                                    <Run Text="/" />
+                                                    <Run Text="{Binding Entries.Count, Mode=OneWay}" />
+                                                    <Run Text="selected" />
+                                                </TextBlock>
+                                            </Border>
+                                        </StackPanel>
+                                        
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button Command="{Binding SelectAllEntriesCommand}" Content="All" Style="{StaticResource ToolButton}" Padding="6,2" Margin="0,0,4,0" ToolTip="Select all barcodes" />
+                                            <Button Command="{Binding DeselectAllEntriesCommand}" Content="None" Style="{StaticResource ToolButton}" Padding="6,2" Margin="0,0,6,0" ToolTip="Deselect all barcodes" />
+                                            <Button Command="{Binding AddEntryCommand}" Style="{StaticResource ToolButton}" Padding="8,3" ToolTip="Add a new barcode item">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="+ Add Barcode" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- List of Barcode Queue Items -->
+                                    <ItemsControl ItemsSource="{Binding Entries}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type models:BarcodeEntry}">
+                                                <Border CornerRadius="6" Padding="8,6" Margin="0,0,0,4" BorderThickness="1">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="{DynamicResource CardBgElevated}" />
+                                                            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderSubtle}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Checkbox for inclusion in generation -->
+                                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                  VerticalAlignment="Center" Margin="0,0,8,0"
+                                                                  ToolTip="Include this barcode in the generated Word document" />
+
+                                                        <!-- Barcode Type Badge -->
+                                                        <Border Grid.Column="1" Background="{DynamicResource NavActiveBg}" CornerRadius="4"
+                                                                Padding="5,2" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding BarcodeType}" FontSize="10" FontWeight="Bold"
+                                                                       Foreground="{DynamicResource TextPrimary}" />
+                                                        </Border>
+
+                                                        <!-- Label / Data click to edit -->
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding DataContext.SelectEntryForEditCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="0">
+                                                            <StackPanel VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold"
+                                                                           Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock Text="{Binding TruncatedData}" FontSize="10"
+                                                                           Foreground="{DynamicResource MutedText}" TextTrimming="CharacterEllipsis" />
+                                                            </StackPanel>
+                                                        </Button>
+
+                                                        <!-- Remove button -->
+                                                        <Button Grid.Column="3"
+                                                                Command="{Binding DataContext.RemoveEntryCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}"
+                                                                Style="{StaticResource ToolButton}" Padding="4,1" Margin="4,0,0,0"
+                                                                VerticalAlignment="Center" ToolTip="Remove barcode item">
+                                                            <TextBlock Text="✕" FontSize="9" Foreground="{DynamicResource MutedText}" />
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Section 1: Selected Item Configuration & Data -->
                             <Border Style="{StaticResource ModernCard}">
                                 <StackPanel>
                                     <Grid Margin="0,0,0,6">
-                                        <TextBlock Text="Barcode Data" Style="{StaticResource FieldLabelText}" Margin="0" />
-                                        <TextBlock Text="Word DISPLAYBARCODE source" FontSize="11"
-                                                   Foreground="{DynamicResource MutedText}" HorizontalAlignment="Right" />
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="Edit Barcode: " Style="{StaticResource FieldLabelText}" Margin="0,0,4,0" />
+                                            <TextBlock Text="{Binding SelectedEntry.Label}" FontWeight="Bold" FontSize="13"
+                                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding CurrentTypeInfo.Name}" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" />
                                     </Grid>
-                                    <TextBlock Text="Enter the text, URL, or data payload Word should encode."
-                                               Style="{StaticResource SubfieldText}" Margin="0,0,0,8" />
+
+                                    <!-- Item Label Textbox -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Item Header:" FontSize="12" Foreground="{DynamicResource MutedText}" VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="1" Text="{Binding SelectedEntry.Label, UpdateSourceTrigger=PropertyChanged}"
+                                                 Height="30" Padding="6,4" FontSize="12" />
+                                    </Grid>
+
+                                    <TextBlock Text="Barcode Data:" Style="{StaticResource SubfieldText}" Margin="0,0,0,4" />
                                     <TextBox Text="{Binding Settings.Data, UpdateSourceTrigger=PropertyChanged}"
-                                             Height="76" AcceptsReturn="True" TextWrapping="Wrap"
+                                             Height="68" AcceptsReturn="True" TextWrapping="Wrap"
                                              VerticalContentAlignment="Top" />
+
+                                    <!-- Format Requirements & Example helper -->
+                                    <Border Background="{DynamicResource CardBgElevated}" CornerRadius="6"
+                                            BorderBrush="{DynamicResource CardBorderSubtle}" BorderThickness="1"
+                                            Padding="10,6" Margin="0,8,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding CurrentTypeInfo.ExpectedFormat, StringFormat='Format: {0}'}"
+                                                           FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Command="{Binding FillExampleDataCommand}"
+                                                    Style="{StaticResource ToolButton}" Padding="8,3" Margin="8,0,0,0"
+                                                    ToolTip="Insert valid sample data for this barcode type">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Use Example: " FontSize="10" Foreground="{DynamicResource MutedText}" />
+                                                    <TextBlock Text="{Binding CurrentTypeInfo.Example}" FontSize="10" FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource TextPrimary}" />
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
                                 </StackPanel>
                             </Border>
 
@@ -628,7 +763,8 @@
                                             Height="46" Margin="0,0,0,12"
                                             IsEnabled="{Binding IsGenerating, Converter={StaticResource BoolToVis}, ConverterParameter=invert}">
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <Path Data="{StaticResource IconSparkleGeo}" Fill="#FFFFFF"
+                                            <Path Data="{StaticResource IconSparkleGeo}"
+                                                  Fill="{DynamicResource PrimaryBtnFg}"
                                                   Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
                                             <TextBlock Text="{Binding GenerateButtonLabel}" FontSize="13" FontWeight="Bold" />
                                         </StackPanel>
@@ -701,7 +837,7 @@
                                     <!-- Workspace Canvas Area -->
                                     <Border Background="{DynamicResource PreviewBg}"
                                             BorderBrush="{DynamicResource PreviewBorder}" BorderThickness="1"
-                                            CornerRadius="8" Height="250" Padding="14">
+                                            CornerRadius="8" Height="260" Padding="14">
                                         <Grid>
                                             <!-- Empty State -->
                                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -722,18 +858,20 @@
                                                            HorizontalAlignment="Center" Margin="0,4,0,0" TextAlignment="Center" />
                                             </StackPanel>
 
-                                            <!-- Paper Sheet Canvas when Image Generated -->
-                                            <Border Background="{DynamicResource PreviewSheetBg}"
+                                            <!-- White Paper Sheet Canvas when Image Generated (Crisp White Canvas for high contrast barcode visibility) -->
+                                            <Border Background="#FFFFFF"
                                                     BorderBrush="{DynamicResource PreviewSheetBorder}" BorderThickness="1"
-                                                    CornerRadius="6" Padding="12"
+                                                    CornerRadius="6" Padding="16"
                                                     Visibility="{Binding HasPreview, Converter={StaticResource BoolToVis}}"
                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                    MaxHeight="220" MaxWidth="320">
+                                                    MaxHeight="230" MaxWidth="320">
                                                 <Border.Effect>
-                                                    <DropShadowEffect BlurRadius="14" ShadowDepth="2" Opacity="0.12" Color="#000000" />
+                                                    <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.25" Color="#000000" />
                                                 </Border.Effect>
                                                 <Image Source="{Binding PreviewImage}"
-                                                       Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
+                                                       Stretch="Uniform"
+                                                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                         </Grid>
                                     </Border>
@@ -853,7 +991,7 @@
                                                         CornerRadius="6" Padding="8,4" Margin="0,0,14,0"
                                                         VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding BarcodeType}" FontSize="11" FontWeight="Bold"
-                                                               Foreground="{DynamicResource NavActiveFg}" />
+                                                               Foreground="{DynamicResource TextPrimary}" />
                                                 </Border>
 
                                                 <!-- Data & Field Code -->
@@ -906,7 +1044,7 @@
                                         BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
                                         HorizontalAlignment="Center" Margin="0,0,0,14">
                                     <Path Data="{StaticResource IconTemplatesGeo}"
-                                          Fill="{DynamicResource PrimaryBrand}"
+                                          Fill="{DynamicResource TextPrimary}"
                                           Stretch="Uniform" Width="24" Height="24"
                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
@@ -958,7 +1096,7 @@
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="Color Theme" FontSize="13" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource TextPrimary}" />
-                                        <TextBlock Text="Switch between Dark and Light mode" FontSize="11"
+                                        <TextBlock Text="Switch between Dark (Black) and Light mode" FontSize="11"
                                                    Foreground="{DynamicResource MutedText}" />
                                     </StackPanel>
                                     <Button Command="{Binding ToggleThemeCommand}"

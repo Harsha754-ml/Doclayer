@@ -44,8 +44,8 @@ artifacts/
 
 # Installer build artifacts
 publish/
+installer/dist/
 installer/Components.wxs
-
 
 # OS / editor
 .DS_Store
