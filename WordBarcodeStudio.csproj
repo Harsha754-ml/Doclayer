@@ -13,4 +13,12 @@
     <Product>Doclayer</Product>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SharpVectors.Reloaded" Version="1.7.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\logo.svg" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -21,5 +21,29 @@
         <SolidColorBrush x:Key="StatusBg" Color="#0F172A" />
         <SolidColorBrush x:Key="StatusFg" Color="#E2E8F0" />
         <SolidColorBrush x:Key="InputText" Color="#1E293B" />
+
+        <!-- Fallback logo. The real one (Assets/logo.svg) overrides this at
+             runtime via ThemeManager/App startup. Kept so the key always exists. -->
+        <DrawingImage x:Key="LogoDrawing">
+            <DrawingImage.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#2563EB">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="16,16,224,224" RadiusX="46" RadiusY="46" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFFFFF">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="70,50,126,156" RadiusX="14" RadiusY="14" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#2563EB">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="92,78,40,40" RadiusX="6" RadiusY="6" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
     </Application.Resources>
 </Application>

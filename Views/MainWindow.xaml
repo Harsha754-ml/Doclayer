@@ -16,79 +16,6 @@
         <conv:BooleanToVisibilityConverter x:Key="BoolToVis" />
         <conv:ControlToVisibilityConverter x:Key="ControlToVis" />
 
-        <LinearGradientBrush x:Key="LogoGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Offset="0" Color="#2563EB" />
-            <GradientStop Offset="1" Color="#1E3A8A" />
-        </LinearGradientBrush>
-
-        <DrawingImage x:Key="LogoDrawing">
-            <DrawingImage.Drawing>
-                <DrawingGroup>
-                    <GeometryDrawing Brush="{StaticResource LogoGradient}">
-                        <GeometryDrawing.Geometry>
-                            <RectangleGeometry Rect="16,16,224,224" RadiusX="46" RadiusY="46" />
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="#33FFFFFF">
-                        <GeometryDrawing.Geometry>
-                            <RectangleGeometry Rect="42,32,156,168" RadiusX="14" RadiusY="14" />
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="#FFFFFF">
-                        <GeometryDrawing.Geometry>
-                            <RectangleGeometry Rect="50,44,156,168" RadiusX="14" RadiusY="14" />
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="#2563EB">
-                        <GeometryDrawing.Geometry>
-                            <RectangleGeometry Rect="70,64,56,56" RadiusX="6" RadiusY="6" />
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="#FFFFFF">
-                        <GeometryDrawing.Geometry>
-                            <RectangleGeometry Rect="76,70,44,44" RadiusX="4" RadiusY="4" />
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="#2563EB">
-                        <GeometryDrawing.Geometry>
-                            <GeometryGroup>
-                                <RectangleGeometry Rect="78,72,9,9" />
-                                <RectangleGeometry Rect="87,72,9,9" />
-                                <RectangleGeometry Rect="96,72,9,9" />
-                                <RectangleGeometry Rect="105,72,9,9" />
-                                <RectangleGeometry Rect="78,81,9,9" />
-                                <RectangleGeometry Rect="105,81,9,9" />
-                                <RectangleGeometry Rect="78,90,9,9" />
-                                <RectangleGeometry Rect="87,90,9,9" />
-                                <RectangleGeometry Rect="96,90,9,9" />
-                                <RectangleGeometry Rect="105,90,9,9" />
-                                <RectangleGeometry Rect="78,99,9,9" />
-                                <RectangleGeometry Rect="96,99,9,9" />
-                                <RectangleGeometry Rect="105,99,9,9" />
-                            </GeometryGroup>
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing Brush="#1E3A8A">
-                        <GeometryDrawing.Geometry>
-                            <GeometryGroup>
-                                <RectangleGeometry Rect="72,150,8,34" />
-                                <RectangleGeometry Rect="84,150,4,34" />
-                                <RectangleGeometry Rect="92,150,10,34" />
-                                <RectangleGeometry Rect="106,150,4,34" />
-                                <RectangleGeometry Rect="114,150,6,34" />
-                                <RectangleGeometry Rect="124,150,12,34" />
-                                <RectangleGeometry Rect="140,150,4,34" />
-                                <RectangleGeometry Rect="148,150,8,34" />
-                                <RectangleGeometry Rect="160,150,4,34" />
-                                <RectangleGeometry Rect="168,150,10,34" />
-                                <RectangleGeometry Rect="182,150,4,34" />
-                            </GeometryGroup>
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                </DrawingGroup>
-            </DrawingImage.Drawing>
-        </DrawingImage>
-
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource CardBg}" />
             <Setter Property="CornerRadius" Value="12" />
@@ -230,7 +157,7 @@
         <Border Grid.Row="0" Style="{StaticResource Card}" Background="{DynamicResource HeaderCardBg}" BorderThickness="0">
             <Grid>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="{StaticResource LogoDrawing}" Width="46" Height="46" Margin="0,0,14,0" />
+                    <Image Source="{DynamicResource LogoDrawing}" Width="46" Height="46" Margin="0,0,14,0" />
                     <StackPanel>
                         <TextBlock Text="Doclayer"
                                    FontSize="24" FontWeight="Bold" Foreground="{DynamicResource HeaderText}" />
